@@ -1,0 +1,55 @@
+# HeyHey Relay
+
+## Purpose
+
+HeyHey Relay exposes only the Home Assistant entities you explicitly approve. The public endpoint must be placed behind Cloudflare Access and also requires the relay bearer secret configured here.
+
+## Configuration
+
+Set `relay_secret` to a randomly generated value of at least 32 characters:
+
+```bash
+openssl rand -hex 32
+```
+
+The entity allowlist is managed from **Open Web UI**. Paste reviewed YAML, validate it, then save it. The last valid configuration remains active if a later edit is invalid.
+
+Example:
+
+```yaml
+version: 1
+rooms:
+  - id: living_room
+    name: Living room
+    entities:
+      - entity_id: light.living_room
+        name: Ceiling lights
+        access: control
+      - entity_id: sensor.living_room_temperature
+        name: Temperature
+        access: read
+```
+
+Supported controllable domains are `light`, `switch`, `climate`, `cover`, `scene`, and `script`. Locks, alarms, garage doors, and all unlisted entities are rejected.
+
+## Cloudflare Tunnel
+
+Install the separate Cloudflared Home Assistant app and route `ha-relay.derekfidler.com` to:
+
+```text
+http://homeassistant:8787
+```
+
+Expose port `8787` in this app's Network settings before starting the tunnel. Protect the hostname with a Cloudflare Access Service Auth policy.
+
+## API
+
+Every `/v1/*` request requires:
+
+```http
+Authorization: Bearer <relay_secret>
+```
+
+- `GET /v1/health`
+- `GET /v1/entities`
+- `POST /v1/actions`

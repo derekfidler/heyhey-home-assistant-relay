@@ -1,0 +1,26 @@
+name: HeyHey Relay
+version: "0.1.0"
+slug: heyhey_relay
+description: A restricted Home Assistant relay for the HeyHeyPa personal dashboard.
+url: https://github.com/derekfidler/heyhey-home-assistant-relay
+arch:
+  - aarch64
+  - amd64
+startup: application
+boot: auto
+init: false
+homeassistant_api: true
+ingress: true
+ingress_port: 8787
+panel_icon: mdi:home-export-outline
+panel_title: HeyHey Relay
+panel_admin: true
+ports:
+  8787/tcp: null
+ports_description:
+  8787/tcp: Relay API for Cloudflare Tunnel
+options:
+  relay_secret: null
+schema:
+  relay_secret: password
+image: ghcr.io/derekfidler/heyhey-home-assistant-relay
