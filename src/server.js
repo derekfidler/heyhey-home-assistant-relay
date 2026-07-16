@@ -22,15 +22,16 @@ await reloadConfig();
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
-    if (url.pathname === "/" && req.method === "GET") return html(res, editorPage(configError));
-    if (url.pathname === "/config" && req.method === "GET") {
+    const ingress = isIngressRequest(req);
+    if (url.pathname === "/" && req.method === "GET" && ingress) return html(res, editorPage(configError));
+    if (url.pathname === "/config" && req.method === "GET" && ingress) {
       return text(res, 200, await readFile(configPath, "utf8").catch(() => exampleConfig()));
     }
-    if (url.pathname === "/config/validate" && req.method === "POST") {
+    if (url.pathname === "/config/validate" && req.method === "POST" && ingress) {
       validateConfigText(await readBody(req, 64_000));
       return json(res, 200, { ok: true });
     }
-    if (url.pathname === "/config" && req.method === "POST") {
+    if (url.pathname === "/config" && req.method === "POST" && ingress) {
       config = await saveConfig(configPath, await readBody(req, 64_000));
       configError = null;
       return json(res, 200, { ok: true });
@@ -79,6 +80,15 @@ function authorized(header, secret) {
   const supplied = Buffer.from(header.slice(7));
   const expected = Buffer.from(secret);
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+}
+
+function isIngressRequest(req) {
+  const address = req.socket.remoteAddress ?? "";
+  return (
+    (address === "172.30.32.2" || address === "::ffff:172.30.32.2") &&
+    typeof req.headers["x-ingress-path"] === "string" &&
+    typeof req.headers["x-remote-user-id"] === "string"
+  );
 }
 
 async function readBody(req, limit) {
