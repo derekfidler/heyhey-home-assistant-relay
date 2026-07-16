@@ -132,9 +132,10 @@ ${error ? `<p class="error">Current configuration: ${escapeHtml(error)}</p>` : "
 <textarea id="config" aria-label="Entity configuration"></textarea><div><button id="validate" class="secondary">Validate</button><button id="save">Save configuration</button></div><p id="status" role="status"></p>
 <script>
 const box=document.querySelector("#config"),status=document.querySelector("#status");
-fetch("./config").then(r=>r.text()).then(t=>box.value=t);
-async function send(path){status.textContent="Working…";const r=await fetch(path,{method:"POST",headers:{"content-type":"text/plain"},body:box.value});const data=await r.json();status.textContent=r.ok?(path.endsWith("validate")?"Configuration is valid.":"Configuration saved."):(data.error||"Request failed.");}
-document.querySelector("#validate").onclick=()=>send("./config/validate");document.querySelector("#save").onclick=()=>send("./config");
+const base=location.pathname.endsWith("/")?location.pathname:location.pathname+"/";
+fetch(base+"config").then(r=>r.text()).then(t=>box.value=t);
+async function send(path){status.textContent="Working…";const r=await fetch(base+path,{method:"POST",headers:{"content-type":"text/plain"},body:box.value});const data=await r.json();status.textContent=r.ok?(path.endsWith("validate")?"Configuration is valid.":"Configuration saved."):(data.error||"Request failed.");}
+document.querySelector("#validate").onclick=()=>send("config/validate");document.querySelector("#save").onclick=()=>send("config");
 </script></main></body></html>`;
 }
 

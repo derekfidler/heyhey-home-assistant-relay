@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Make the Ingress configuration editor work under Home Assistant's path prefix.
+- Clarify Cloudflared routing through Green's LAN address.
+
 ## 0.1.0
 
 - Initial restricted relay API.
