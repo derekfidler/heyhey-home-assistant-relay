@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Allow explicitly reviewed Home Assistant input booleans to use the restricted toggle action.
+
 ## 0.2.0
 
 - Add allowlist-gated, two-hour numeric history for HeyHey sparklines.

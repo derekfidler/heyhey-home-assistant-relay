@@ -41,3 +41,15 @@ rooms:
         access: control
 `), /cannot be controllable/);
 });
+
+test("allows reviewed input booleans as controls", () => {
+  const config = validateConfigText(`version: 1
+rooms:
+  - id: bedroom
+    name: Bedroom
+    entities:
+      - entity_id: input_boolean.bedroom_shutter
+        access: control
+`);
+  assert.equal(config.rooms[0].entities[0].entityId, "input_boolean.bedroom_shutter");
+});

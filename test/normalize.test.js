@@ -29,3 +29,15 @@ test("normalizes numeric history and removes unavailable states", () => {
     { timestamp: "2026-07-17T10:00:00Z", value: 22.1 },
   ]);
 });
+
+test("exposes toggle capability for a controllable input boolean", () => {
+  const result = normalizeRooms({
+    rooms: [{ id: "home", name: "Home", entities: [{ entityId: "input_boolean.air_conditioner", access: "control", name: "Air conditioner" }] }],
+  }, [{
+    entity_id: "input_boolean.air_conditioner",
+    state: "off",
+    last_changed: "2026-01-01T00:00:00Z",
+    attributes: {},
+  }]);
+  assert.deepEqual(result.rooms[0].entities[0].capabilities, ["toggle"]);
+});

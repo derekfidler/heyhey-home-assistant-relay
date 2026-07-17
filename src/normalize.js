@@ -89,6 +89,7 @@ function capabilities(domain, access, attributes) {
         ? ["toggle", "set_brightness"]
         : ["toggle"];
     case "switch":
+    case "input_boolean":
       return ["toggle"];
     case "climate":
       return ["set_temperature"];

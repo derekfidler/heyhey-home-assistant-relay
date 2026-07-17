@@ -5,6 +5,7 @@ import { createHomeAssistantClient, resolveAction } from "../src/home-assistant.
 const config = {
   rooms: [{ entities: [
     { entityId: "light.desk", access: "control" },
+    { entityId: "input_boolean.air_conditioner", access: "control" },
     { entityId: "sensor.temperature", access: "read" },
   ] }],
 };
@@ -19,6 +20,18 @@ test("maps brightness to a fixed Home Assistant service", () => {
     domain: "light",
     service: "turn_on",
     data: { entity_id: "light.desk", brightness_pct: 55 },
+  });
+});
+
+test("maps input booleans to the fixed toggle service", () => {
+  assert.deepEqual(resolveAction(config, {
+    entityId: "input_boolean.air_conditioner",
+    action: "toggle",
+  }), {
+    entityId: "input_boolean.air_conditioner",
+    domain: "input_boolean",
+    service: "toggle",
+    data: { entity_id: "input_boolean.air_conditioner" },
   });
 });
 

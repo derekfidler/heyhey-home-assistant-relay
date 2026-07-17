@@ -1,7 +1,7 @@
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { parse } from "yaml";
 
-const DOMAINS = new Set(["light", "switch", "climate", "cover", "scene", "script"]);
+const DOMAINS = new Set(["light", "switch", "input_boolean", "climate", "cover", "scene", "script"]);
 const ACCESS = new Set(["read", "control"]);
 
 export function validateConfigText(text) {

@@ -6,6 +6,9 @@ const ACTIONS = {
   switch: {
     toggle: { service: "toggle" },
   },
+  input_boolean: {
+    toggle: { service: "toggle" },
+  },
   climate: {
     set_temperature: { service: "set_temperature", field: "temperature", min: 5, max: 35 },
   },
