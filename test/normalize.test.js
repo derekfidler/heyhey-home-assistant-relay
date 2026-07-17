@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeRooms } from "../src/normalize.js";
+import { normalizeHistory, normalizeRooms } from "../src/normalize.js";
 
 test("filters sensitive attributes and preserves room order", () => {
   const result = normalizeRooms({
@@ -14,4 +14,18 @@ test("filters sensitive attributes and preserves room order", () => {
   assert.equal(result.rooms[0].entities[0].name, "Desk");
   assert.deepEqual(result.rooms[0].entities[0].attributes, { brightness: 120 });
   assert.deepEqual(result.rooms[0].entities[0].capabilities, ["toggle", "set_brightness"]);
+});
+
+test("normalizes numeric history and removes unavailable states", () => {
+  const start = new Date("2026-07-17T08:00:00Z");
+  const end = new Date("2026-07-17T10:00:00Z");
+  const result = normalizeHistory(["sensor.temperature"], [[
+    { entity_id: "sensor.temperature", state: "21.2", last_changed: "2026-07-17T08:00:00Z" },
+    { state: "unknown", last_changed: "2026-07-17T09:00:00Z" },
+    { state: "22.1", last_changed: "2026-07-17T10:00:00Z" },
+  ]], start, end);
+  assert.deepEqual(result.series[0].points, [
+    { timestamp: "2026-07-17T08:00:00Z", value: 21.2 },
+    { timestamp: "2026-07-17T10:00:00Z", value: 22.1 },
+  ]);
 });

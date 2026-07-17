@@ -12,8 +12,23 @@ rooms:
         access: control
       - entity_id: sensor.temperature
         access: read
+        history: true
 `);
   assert.equal(config.rooms[0].entities[0].entityId, "light.desk");
+  assert.equal(config.rooms[0].entities[0].history, false);
+  assert.equal(config.rooms[0].entities[1].history, true);
+});
+
+test("rejects non-boolean history settings", () => {
+  assert.throws(() => validateConfigText(`version: 1
+rooms:
+  - id: office
+    name: Office
+    entities:
+      - entity_id: sensor.temperature
+        access: read
+        history: two_hours
+`), /history must be true or false/);
 });
 
 test("rejects duplicate entities and unsafe controllable domains", () => {

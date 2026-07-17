@@ -33,6 +33,7 @@ export function validateConfigText(text) {
         entityId,
         name: entity.name ? cleanLabel(entity.name, `${entityId} name`) : null,
         access: entity.access,
+        history: cleanHistory(entity.history, entityId),
       };
     });
     return { id, name, entities };
@@ -80,4 +81,10 @@ function cleanLabel(value, label) {
     throw new Error(`${label} must be between 1 and 80 characters.`);
   }
   return value.trim();
+}
+
+function cleanHistory(value, entityId) {
+  if (value === undefined) return false;
+  if (typeof value !== "boolean") throw new Error(`${entityId} history must be true or false.`);
+  return value;
 }

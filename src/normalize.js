@@ -39,8 +39,46 @@ export function normalizeEntity(entry, state) {
     available: Boolean(state) && !["unavailable", "unknown"].includes(state.state),
     attributes,
     capabilities: capabilities(domain, entry.access, state?.attributes ?? {}),
+    history: entry.history,
     lastChanged: state?.last_changed ?? null,
   };
+}
+
+export function normalizeHistory(entityIds, history, start, end, maxPoints = 90) {
+  const requested = new Set(entityIds);
+  const byId = new Map();
+
+  for (const rawSeries of Array.isArray(history) ? history : []) {
+    if (!Array.isArray(rawSeries) || rawSeries.length === 0) continue;
+    const entityId = rawSeries.find((item) => typeof item?.entity_id === "string")?.entity_id;
+    if (!entityId || !requested.has(entityId)) continue;
+    const points = rawSeries.flatMap((item) => {
+      const value = Number(item?.state);
+      const timestamp = item?.last_changed ?? item?.last_updated;
+      if (!Number.isFinite(value) || typeof timestamp !== "string" || !Number.isFinite(Date.parse(timestamp))) {
+        return [];
+      }
+      return [{ timestamp, value }];
+    });
+    byId.set(entityId, downsample(points, maxPoints));
+  }
+
+  return {
+    from: start.toISOString(),
+    to: end.toISOString(),
+    series: entityIds.map((entityId) => ({ entityId, points: byId.get(entityId) ?? [] })),
+  };
+}
+
+function downsample(points, maxPoints) {
+  if (points.length <= maxPoints) return points;
+  const result = [points[0]];
+  const interior = maxPoints - 2;
+  for (let index = 1; index <= interior; index += 1) {
+    result.push(points[Math.round((index * (points.length - 1)) / (maxPoints - 1))]);
+  }
+  result.push(points.at(-1));
+  return result;
 }
 
 function capabilities(domain, access, attributes) {

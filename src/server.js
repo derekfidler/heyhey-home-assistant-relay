@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { loadConfig, readOptions, saveConfig, validateConfigText } from "./config.js";
 import { createHomeAssistantClient, RelayError, resolveAction } from "./home-assistant.js";
-import { normalizeEntity, normalizeRooms } from "./normalize.js";
+import { normalizeEntity, normalizeHistory, normalizeRooms } from "./normalize.js";
 
 const port = Number(process.env.PORT ?? 8787);
 const configPath = process.env.CONFIG_PATH ?? "/data/entities.yaml";
@@ -49,6 +49,13 @@ createServer(async (req, res) => {
     if (url.pathname === "/v1/entities" && req.method === "GET") {
       return json(res, 200, normalizeRooms(config, await ha.states()));
     }
+    if (url.pathname === "/v1/history" && req.method === "GET") {
+      const entityIds = parseHistoryEntities(url, config);
+      const hours = parseHistoryHours(url.searchParams.get("hours"));
+      const end = new Date();
+      const start = new Date(end.getTime() - hours * 60 * 60 * 1_000);
+      return json(res, 200, normalizeHistory(entityIds, await ha.history(entityIds, start, end), start, end));
+    }
     if (url.pathname === "/v1/actions" && req.method === "POST") {
       const action = resolveAction(config, JSON.parse(await readBody(req, 16_000)));
       await ha.call(action);
@@ -64,6 +71,32 @@ createServer(async (req, res) => {
 }).listen(port, "0.0.0.0", () => {
   console.log(`HeyHey Relay listening on port ${port}.`);
 });
+
+function parseHistoryEntities(url, currentConfig) {
+  const raw = url.searchParams.get("entities") ?? "";
+  const entityIds = [...new Set(raw.split(",").filter(Boolean))];
+  if (entityIds.length < 1 || entityIds.length > 12) {
+    throw new RelayError(400, "History requires between 1 and 12 entities.");
+  }
+  const allowed = new Set(
+    currentConfig.rooms
+      .flatMap((room) => room.entities)
+      .filter((entry) => entry.history)
+      .map((entry) => entry.entityId),
+  );
+  if (entityIds.some((entityId) => !/^[a-z0-9_]+\.[a-z0-9_]+$/.test(entityId) || !allowed.has(entityId))) {
+    throw new RelayError(403, "History is not enabled for this entity.");
+  }
+  return entityIds;
+}
+
+function parseHistoryHours(value) {
+  const hours = Number(value ?? 2);
+  if (!Number.isInteger(hours) || hours < 1 || hours > 2) {
+    throw new RelayError(400, "History hours must be 1 or 2.");
+  }
+  return hours;
+}
 
 async function reloadConfig() {
   try {
@@ -126,6 +159,10 @@ rooms:
       - entity_id: light.living_room
         name: Ceiling lights
         access: control
+      - entity_id: sensor.living_room_temperature
+        name: Temperature
+        access: read
+        history: true
 `;
 }
 

@@ -62,6 +62,14 @@ export function createHomeAssistantClient({ baseUrl, token, fetchImpl = fetch })
   return {
     states: () => request("/states"),
     state: (entityId) => request(`/states/${encodeURIComponent(entityId)}`),
+    history: (entityIds, start, end) => {
+      const query = new URLSearchParams({
+        filter_entity_id: entityIds.join(","),
+        end_time: end.toISOString(),
+      });
+      query.append("minimal_response", "");
+      return request(`/history/period/${encodeURIComponent(start.toISOString())}?${query}`);
+    },
     call: ({ domain, service, data }) =>
       request(`/services/${domain}/${service}`, { method: "POST", body: JSON.stringify(data) }),
   };

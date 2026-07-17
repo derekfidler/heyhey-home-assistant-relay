@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveAction } from "../src/home-assistant.js";
+import { createHomeAssistantClient, resolveAction } from "../src/home-assistant.js";
 
 const config = {
   rooms: [{ entities: [
@@ -32,4 +32,25 @@ test("rejects read-only and out-of-range actions", () => {
     action: "set_brightness",
     value: 101,
   }), /between 1 and 100/);
+});
+
+test("requests a bounded minimal history period", async () => {
+  let requestedUrl;
+  const client = createHomeAssistantClient({
+    baseUrl: "http://supervisor/core/api",
+    token: "token",
+    fetchImpl: async (url) => {
+      requestedUrl = new URL(url);
+      return { ok: true, json: async () => [] };
+    },
+  });
+  await client.history(
+    ["sensor.temperature", "sensor.humidity"],
+    new Date("2026-07-17T08:00:00Z"),
+    new Date("2026-07-17T10:00:00Z"),
+  );
+  assert.equal(requestedUrl.pathname, "/core/api/history/period/2026-07-17T08%3A00%3A00.000Z");
+  assert.equal(requestedUrl.searchParams.get("filter_entity_id"), "sensor.temperature,sensor.humidity");
+  assert.equal(requestedUrl.searchParams.get("end_time"), "2026-07-17T10:00:00.000Z");
+  assert.equal(requestedUrl.searchParams.has("minimal_response"), true);
 });

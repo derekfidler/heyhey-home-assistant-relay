@@ -28,6 +28,7 @@ rooms:
       - entity_id: sensor.living_room_temperature
         name: Temperature
         access: read
+        history: true
 ```
 
 Supported controllable domains are `light`, `switch`, `climate`, `cover`, `scene`, and `script`. Locks, alarms, garage doors, and all unlisted entities are rejected.
@@ -52,4 +53,7 @@ Authorization: Bearer <relay_secret>
 
 - `GET /v1/health`
 - `GET /v1/entities`
+- `GET /v1/history?entities=sensor.living_room_temperature&hours=2`
 - `POST /v1/actions`
+
+History must be enabled per entity with `history: true`. Requests are restricted to those allowlisted entities, at most 12 entities per call, a one or two hour window, numeric states, and 90 downsampled points per series.
