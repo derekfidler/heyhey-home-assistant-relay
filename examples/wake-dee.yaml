@@ -1,5 +1,6 @@
 # Merge under the existing scripts.yaml mapping, then reload scripts.
-# Also enable wake_on_lan: in configuration.yaml and restart Home Assistant.
+# First add Wake on LAN in Settings > Devices & services using the MAC below.
+# Alternatively enable wake_on_lan: in configuration.yaml and restart Home Assistant.
 wake_dee:
   alias: Wake Dee
   description: Wake the Windows PC that runs Dee locally.
