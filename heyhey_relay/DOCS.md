@@ -43,7 +43,11 @@ http://<GREEN_LAN_IP>:8787
 
 Expose port `8787` in this app's Network settings before starting the tunnel. Use Green's fixed LAN address, for example `http://192.168.1.40:8787`, as the Cloudflared `additional_hosts` service. Protect the hostname with a Cloudflare Access Service Auth policy.
 
-## API
+## Wake Dee
+
+The relay already supports running allowlisted scripts. The [example Wake Dee script](https://github.com/derekfidler/heyhey-home-assistant-relay/blob/main/examples/wake-dee.yaml) sends magic packets from Green to the Windows worker. Follow the [complete setup](https://github.com/derekfidler/heyheypa-web/blob/main/docs/wake-on-lan.md), then allowlist `script.wake_dee` with `access: control`. No relay software update is required.
+
+## API requests
 
 Every `/v1/*` request requires:
 

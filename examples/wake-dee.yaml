@@ -1,0 +1,18 @@
+# Merge under the existing scripts.yaml mapping, then reload scripts.
+# Also enable wake_on_lan: in configuration.yaml and restart Home Assistant.
+wake_dee:
+  alias: Wake Dee
+  description: Wake the Windows PC that runs Dee locally.
+  mode: single
+  max_exceeded: silent
+  sequence:
+    - repeat:
+        count: 3
+        sequence:
+          - action: wake_on_lan.send_magic_packet
+            data:
+              mac: "BC:FC:E7:C9:73:3F"
+              broadcast_address: "255.255.255.255"
+              broadcast_port: 9
+          - delay:
+              seconds: 1
